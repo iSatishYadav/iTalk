@@ -1,0 +1,76 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="panel panel-primary container-fluid row">
+    <div class="panel-heading">
+        iTalk
+    </div>
+    <div class="panel-body container-fluid">
+        <div class="col-sm-6">
+            <ul class="list-group" id="listOfUsers">
+                <li class="list-group-item active">Connected Users</li>
+            </ul>
+        </div>
+        <div class="col-sm-6">
+            <input type="hidden" id="myID" />
+            <input type="hidden" id="myName" />
+            @Html.Partial("_iChatWindow")
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="chatModel" tabindex="-1" role="dialog" aria-labelledby="chatModel-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="chatModel-label">Chat</h4>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        var hub = $.connection.iHub;
+        $.connection.hub.start().done(function () {
+            $("#myName").val(prompt('Enter your name:', ''));
+            hub.server.connect($("#myName").val()).done(function () {
+                $(".connectedUser").click(function () {
+                    var id = $(this).parent().data("userid");
+                    hub.server.message(id, "Hello");
+                });
+            });
+            $(".iChatWindow").find(".sendMessage").click(function () {
+                hub.server.broadcast($("#myID").val(), $("#myName").val(), $("#messageBody").val());
+                $("#messageBody").val('');
+            });
+        });
+        hub.client.broadcast = function (id, name, message) {
+            console.log("ID Got: " + id);
+            var myID = $("#myID").val();
+            var messageList = $(".iChatWindow").find(".messageList");
+            if (id == myID) {
+                messageList.append('<li class="list-group-item text-info" style="text-align:right"><strong>' + name + ':</strong> ' + message + '</li>');
+            }
+            else {
+                messageList.append('<li class="list-group-item"><strong>' + name + ':</strong> ' + message + '</li>');
+            }
+            var elem = document.getElementsByClassName("iChatWindowBody")[0];
+            elem.scrollTop = elem.scrollHeight;
+        }
+        hub.client.onNewUserConnected = function (id, name) {
+            $("#listOfUsers").append('<li class="list-group-item" data-userId="' + id + '"><a href="#" class="connectedUser"> ' + name + '</a></li>');
+        }
+        hub.client.onConnected = function (id, name, connectedUsers) {
+            $("#myID").val(id);
+            $.each(connectedUsers, function (index, value) {
+                $("#listOfUsers").append('<li class="list-group-item" data-userId="' + value.ID + '"><a href="#" class="connectedUser">' + value.Name + '</a></li>');
+            });
+        }
+    });
+</script>

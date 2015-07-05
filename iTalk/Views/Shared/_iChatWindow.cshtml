@@ -1,0 +1,24 @@
+﻿<div class="container-fluid iChatWindow">
+    <div class="panel panel-default ">
+        <div class="panel-heading">
+            <a href="#" id="chatTitle">Chat</a> <a href="#"><span class="glyphicon glyphicon-remove pull-right "></span></a>
+        </div>
+        <div class="panel-body container-fluid iChatWindowBody">
+            <ul class="list-group messageList"></ul>
+        </div>
+        <div class="input-group">
+            <input type="text" class="form-control" id="messageBody" placeholder="Message Here">
+            <span class="input-group-btn">
+                <input type="submit" value="Go" class="btn btn-primary sendMessage" />
+            </span>
+        </div>
+    </div>
+</div>
+<script>
+    $("input[type=text]").keyup(function (event) {
+        if (event.which == 13) {
+            $(this).next().children("input[type=submit]").click();
+            $(this).focus();
+        }
+    });
+</script>
